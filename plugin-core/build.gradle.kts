@@ -18,7 +18,7 @@ dependencies {
     implementation("cc.dreamcode.platform:dream-command:1.13.8")
     implementation("cc.dreamcode.platform:persistence:1.13.8")
     implementation("eu.okaeri:okaeri-persistence:3.0.1-beta.4")
-    implementation("eu.okaeri:okaeri-configs-yaml-bukkit:5.0.0-beta.4")
+    implementation("eu.okaeri:okaeri-configs-yaml-bukkit:5.0.13")
 
     // -- dream-utilties --
     implementation("cc.dreamcode:utilities-adventure:1.5.8")
