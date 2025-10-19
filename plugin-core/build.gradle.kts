@@ -28,7 +28,7 @@ dependencies {
     implementation("cc.dreamcode.notice:bukkit-serializer:1.7.4")
 
     // -- dream-command --
-    implementation("cc.dreamcode.command:bukkit:2.2.2")
+    implementation("cc.dreamcode.command:bukkit:2.2.3")
 
     // -- dream-menu --
     implementation("cc.dreamcode.menu:bukkit:1.4.3")
