@@ -18,17 +18,17 @@ dependencies {
     implementation("cc.dreamcode.platform:dream-command:1.13.8")
     implementation("cc.dreamcode.platform:persistence:1.13.8")
     implementation("eu.okaeri:okaeri-persistence:3.0.1-beta.4")
-    implementation("eu.okaeri:okaeri-configs-yaml-bukkit:5.0.0-beta.4")
+    implementation("eu.okaeri:okaeri-configs-yaml-bukkit:5.0.13")
 
     // -- dream-utilties --
-    implementation("cc.dreamcode:utilities-adventure:1.5.7")
+    implementation("cc.dreamcode:utilities-adventure:1.5.8")
 
     // -- dream-notice --
-    implementation("cc.dreamcode.notice:bukkit:1.7.1")
-    implementation("cc.dreamcode.notice:bukkit-serializer:1.7.1")
+    implementation("cc.dreamcode.notice:bukkit:1.7.4")
+    implementation("cc.dreamcode.notice:bukkit-serializer:1.7.4")
 
     // -- dream-command --
-    implementation("cc.dreamcode.command:bukkit:2.2.2")
+    implementation("cc.dreamcode.command:bukkit:2.2.3")
 
     // -- dream-menu --
     implementation("cc.dreamcode.menu:bukkit:1.4.3")
