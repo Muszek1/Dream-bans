@@ -10,15 +10,15 @@ import org.bukkit.event.player.PlayerQuitEvent;
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class ProfileController implements Listener {
 
-    private final ProfileService profileService;
+  private final ProfileService profileService;
 
-    @EventHandler
-    public void onJoin(PlayerJoinEvent event) {
-        profileService.handleJoin(event.getPlayer());
-    }
+  @EventHandler
+  public void onJoin(PlayerJoinEvent event) {
+    profileService.handleJoin(event.getPlayer());
+  }
 
-    @EventHandler
-    public void onQuit(PlayerQuitEvent event) {
-        profileService.handleQuit(event.getPlayer());
-    }
+  @EventHandler
+  public void onQuit(PlayerQuitEvent event) {
+    profileService.handleQuit(event.getPlayer());
+  }
 }

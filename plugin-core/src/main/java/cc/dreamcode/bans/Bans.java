@@ -1,14 +1,30 @@
 // java
 package cc.dreamcode.bans;
 
-import cc.dreamcode.bans.command.*;
+import cc.dreamcode.bans.command.BanCommand;
+import cc.dreamcode.bans.command.BanipCommand;
+import cc.dreamcode.bans.command.CheckBanCommand;
+import cc.dreamcode.bans.command.KickCommand;
+import cc.dreamcode.bans.command.MuteCommand;
+import cc.dreamcode.bans.command.SilentKickCommand;
+import cc.dreamcode.bans.command.SilentbanCommand;
+import cc.dreamcode.bans.command.SilenttempbanCommand;
+import cc.dreamcode.bans.command.TempbanCommand;
+import cc.dreamcode.bans.command.TempmuteCommand;
+import cc.dreamcode.bans.command.UnbanCommand;
+import cc.dreamcode.bans.command.UnbanipCommand;
+import cc.dreamcode.bans.command.UnmuteCommand;
+import cc.dreamcode.bans.command.WarnCommand;
 import cc.dreamcode.bans.command.handler.InvalidInputHandlerImpl;
 import cc.dreamcode.bans.command.handler.InvalidPermissionHandlerImpl;
 import cc.dreamcode.bans.command.handler.InvalidSenderHandlerImpl;
 import cc.dreamcode.bans.command.handler.InvalidUsageHandlerImpl;
 import cc.dreamcode.bans.command.result.BukkitNoticeResolver;
 import cc.dreamcode.bans.config.PluginConfig;
-import cc.dreamcode.bans.listener.*;
+import cc.dreamcode.bans.listener.BanListener;
+import cc.dreamcode.bans.listener.MultiAccountListener;
+import cc.dreamcode.bans.listener.MuteCommandListener;
+import cc.dreamcode.bans.listener.MuteListener;
 import cc.dreamcode.bans.profile.ProfileCache;
 import cc.dreamcode.bans.profile.ProfileController;
 import cc.dreamcode.bans.profile.ProfileRepository;
@@ -41,117 +57,122 @@ import lombok.Getter;
 import lombok.NonNull;
 
 
-public final class Bans extends DreamBukkitPlatform implements DreamBukkitConfig, DreamPersistence  {
+public final class Bans extends DreamBukkitPlatform implements DreamBukkitConfig, DreamPersistence {
 
-    @Getter private static Bans instance;
+  @Getter
+  private static Bans instance;
+  @Inject
+  private ProfileService profileService;
 
-    @Override
-    public void load(@NonNull ComponentService componentService) {
-        instance = this;
+  @Override
+  public void load(@NonNull ComponentService componentService) {
+    instance = this;
 
-        AdventureUtil.setRgbSupport(true);
-        StringColorUtil.setColorProcessor(new AdventureProcessor());
+    AdventureUtil.setRgbSupport(true);
+    StringColorUtil.setColorProcessor(new AdventureProcessor());
+  }
+
+  @Override
+  public void enable(@NonNull ComponentService componentService) {
+
+    componentService.setDebug(false);
+
+    this.registerInjectable(BukkitTasker.newPool(this));
+    this.registerInjectable(BukkitMenuProvider.create(this));
+    this.registerInjectable(BukkitCommandProvider.create(this));
+    componentService.registerExtension(DreamCommandExtension.class);
+    componentService.registerResolver(ConfigurationResolver.class);
+
+    componentService.registerComponent(cc.dreamcode.bans.config.PluginConfig.class);
+    componentService.registerComponent(cc.dreamcode.bans.config.MessageConfig.class);
+
+    componentService.registerComponent(BukkitNoticeResolver.class);
+    componentService.registerComponent(InvalidInputHandlerImpl.class);
+    componentService.registerComponent(InvalidPermissionHandlerImpl.class);
+    componentService.registerComponent(InvalidSenderHandlerImpl.class);
+    componentService.registerComponent(InvalidUsageHandlerImpl.class);
+    componentService.registerComponent(PluginConfig.class, pluginConfig -> {
+      // register persistence + repositories
+      this.registerInjectable(pluginConfig.storageConfig);
+
+      componentService.registerResolver(DocumentPersistenceResolver.class);
+
+      componentService.registerComponent(DocumentPersistence.class, dp -> {
+
+        this.registerInjectable(dp);
+        this.registerInjectable(new DocumentPersistence[] { dp });
+      });
+
+      componentService.registerResolver(DocumentRepositoryResolver.class);
+      componentService.registerComponent(ProfileRepository.class);
+
+      componentService.setDebug(pluginConfig.debug);
+
+      componentService.registerComponent(ProfileRepository.class);
+
+
+    });
+
+    componentService.registerComponent(DiscordWebhookService.class);
+    componentService.registerComponent(ProfileCache.class);
+    componentService.registerComponent(ProfileService.class);
+    componentService.registerComponent(ProfileController.class);
+
+    componentService.registerComponent(BanService.class);
+    componentService.registerComponent(MuteService.class);
+
+    componentService.registerComponent(BanCommand.class);
+    componentService.registerComponent(UnbanCommand.class);
+    componentService.registerComponent(TempbanCommand.class);
+
+    componentService.registerComponent(KickCommand.class);
+    componentService.registerComponent(WarnCommand.class);
+    componentService.registerComponent(SilentKickCommand.class);
+    componentService.registerComponent(SilentbanCommand.class);
+    componentService.registerComponent(SilenttempbanCommand.class);
+
+    componentService.registerComponent(BanipCommand.class);
+    componentService.registerComponent(UnbanipCommand.class);
+    componentService.registerComponent(TempmuteCommand.class);
+    componentService.registerComponent(MuteCommand.class);
+    componentService.registerComponent(UnmuteCommand.class);
+
+    componentService.registerComponent(cc.dreamcode.bans.gui.CheckBanMenu.class, menu -> {
+      this.registerInjectable(menu);
+      this.registerInjectable(new cc.dreamcode.bans.gui.CheckBanMenu[]{ menu });
+    });
+    componentService.registerComponent(CheckBanCommand.class);
+    componentService.registerComponent(BanListener.class);
+    componentService.registerComponent(MuteListener.class);
+    componentService.registerComponent(MuteCommandListener.class);
+    componentService.registerComponent(MultiAccountListener.class);
+
+    componentService.registerComponent(MessageBroadcaster.class);
+
+
+  }
+
+
+  @Override
+  public void disable() {
+    // features need to be call when server is stopping
+    if (this.profileService != null) {
+      this.profileService.saveAllAsync();
     }
-
-    @Inject
-    private ProfileService profileService;
-    @Override
-    public void enable(@NonNull ComponentService componentService) {
+  }
 
 
+  @Override
+  public @NonNull DreamVersion getDreamVersion() {
+    return DreamVersion.create("Dream-Bans", "1.0-InDEV", "Muszek_");
+  }
 
-        componentService.setDebug(false);
-
-        this.registerInjectable(BukkitTasker.newPool(this));
-        this.registerInjectable(BukkitMenuProvider.create(this));
-        this.registerInjectable(BukkitCommandProvider.create(this));
-        componentService.registerExtension(DreamCommandExtension.class);
-        componentService.registerResolver(ConfigurationResolver.class);
-
-        componentService.registerComponent(cc.dreamcode.bans.config.PluginConfig.class);
-        componentService.registerComponent(cc.dreamcode.bans.config.MessageConfig.class);
-
-
-        componentService.registerComponent(BukkitNoticeResolver.class);
-        componentService.registerComponent(InvalidInputHandlerImpl.class);
-        componentService.registerComponent(InvalidPermissionHandlerImpl.class);
-        componentService.registerComponent(InvalidSenderHandlerImpl.class);
-        componentService.registerComponent(InvalidUsageHandlerImpl.class);
-        componentService.registerComponent(PluginConfig.class, pluginConfig -> {
-            // register persistence + repositories
-            this.registerInjectable(pluginConfig.storageConfig);
-
-            componentService.registerResolver(DocumentPersistenceResolver.class);
-            componentService.registerComponent(DocumentPersistence.class);
-            componentService.registerResolver(DocumentRepositoryResolver.class);
-
-            // enable additional logs and debug messages
-            componentService.setDebug(pluginConfig.debug);
-
-            // let the DocumentRepositoryResolver create the repository implementation
-            componentService.registerComponent(ProfileRepository.class);
-
-            String webhookUrl = pluginConfig.discordWebhookUrl; // If this method exists
-            componentService.registerComponent(DiscordWebhookService.class, service -> {
-                service.setWebhookUrl(webhookUrl);
-            });
-
-        });
-
-        componentService.registerComponent(ProfileCache.class);
-        componentService.registerComponent(ProfileService.class);
-        componentService.registerComponent(ProfileController.class);
-
-        componentService.registerComponent(BanService.class);
-        componentService.registerComponent(MuteService.class);
-
-        componentService.registerComponent(BanCommand.class);
-        componentService.registerComponent(UnbanCommand.class);
-        componentService.registerComponent(TempbanCommand.class);
-        componentService.registerComponent(KickCommand.class);
-        componentService.registerComponent(WarnCommand.class);
-        componentService.registerComponent(SilentKickCommand.class);
-        componentService.registerComponent(SilentbanCommand.class);
-        componentService.registerComponent(SilenttempbanCommand.class);
-        componentService.registerComponent(BanipCommand.class);
-        componentService.registerComponent(UnbanipCommand.class);
-        componentService.registerComponent(TempmuteCommand.class);
-        componentService.registerComponent(MuteCommand.class);
-        componentService.registerComponent(UnmuteCommand.class);
-        componentService.registerComponent(CheckBanCommand.class);
-
-        componentService.registerComponent(BanListener.class);
-        componentService.registerComponent(MuteListener.class);
-        componentService.registerComponent(MuteCommandListener.class);
-        componentService.registerComponent(MultiAccountListener.class);
-        componentService.registerComponent(CheckBanMenuListener.class);
-
-        componentService.registerComponent(MessageBroadcaster.class);
-
-
-    }
-
-
-    @Override
-    public void disable() {
-        // features need to be call when server is stopping
-        if (this.profileService != null) {
-            this.profileService.saveAllAsync();
-        }
-    }
-
-
-    @Override
-    public @NonNull DreamVersion getDreamVersion() {
-        return DreamVersion.create("Dream-Bans", "1.0-InDEV", "Muszek_");
-    }
-
-    @Override
-    public @NonNull OkaeriSerdesPack getConfigSerdesPack() {
-        return registry -> {
-            registry.register(new BukkitNoticeSerializer());
-            registry.register(new MenuBuilderSerializer());
-        };
-    }
+  @Override
+  public @NonNull OkaeriSerdesPack getConfigSerdesPack() {
+    return registry -> {
+      registry.register(new BukkitNoticeSerializer());
+      registry.register(new MenuBuilderSerializer());
+    };
+  }
 
 }

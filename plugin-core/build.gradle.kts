@@ -43,15 +43,15 @@ tasks.withType<ShadowJar> {
     archiveFileName.set("Dream-Bans-${project.version}.jar")
     mergeServiceFiles()
 
-    relocate("com.cryptomorin", "cc.dreamcode.tpa.libs.com.cryptomorin")
-    relocate("eu.okaeri", "cc.dreamcode.tpa.libs.eu.okaeri")
-    relocate("net.kyori", "cc.dreamcode.tpa.libs.net.kyori")
+    relocate("com.cryptomorin", "cc.dreamcode.bans.libs.com.cryptomorin")
+    relocate("eu.okaeri", "cc.dreamcode.bans.libs.eu.okaeri")
+    relocate("net.kyori", "cc.dreamcode.bans.libs.net.kyori")
 
-    relocate("cc.dreamcode.platform", "cc.dreamcode.tpa.libs.cc.dreamcode.platform")
-    relocate("cc.dreamcode.utilities", "cc.dreamcode.tpa.libs.cc.dreamcode.utilities")
-    relocate("cc.dreamcode.menu", "cc.dreamcode.tpa.libs.cc.dreamcode.menu")
-    relocate("cc.dreamcode.command", "cc.dreamcode.tpa.libs.cc.dreamcode.command")
-    relocate("cc.dreamcode.notice", "cc.dreamcode.tpa.libs.cc.dreamcode.notice")
+    relocate("cc.dreamcode.platform", "cc.dreamcode.bans.libs.cc.dreamcode.platform")
+    relocate("cc.dreamcode.utilities", "cc.dreamcode.bans.libs.cc.dreamcode.utilities")
+    relocate("cc.dreamcode.menu", "cc.dreamcode.bans.libs.cc.dreamcode.menu")
+    relocate("cc.dreamcode.command", "cc.dreamcode.bans.libs.cc.dreamcode.command")
+    relocate("cc.dreamcode.notice", "cc.dreamcode.bans.libs.cc.dreamcode.notice")
 
 
     transform(PropertiesFileTransformer::class.java) {

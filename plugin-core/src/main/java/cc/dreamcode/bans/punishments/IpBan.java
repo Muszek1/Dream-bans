@@ -6,10 +6,11 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class IpBan {
-    private final String ip;
-    private String reason;
-    private final String bannedBy;
-    private long date;
-    private final long until;
+
+  private final String ip;
+  private final String bannedBy;
+  private final long until;
+  private String reason;
+  private long date;
 
 }

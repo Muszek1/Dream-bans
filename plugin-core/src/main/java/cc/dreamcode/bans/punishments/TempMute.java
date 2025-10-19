@@ -4,14 +4,16 @@ import eu.okaeri.configs.OkaeriConfig;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
 public class TempMute extends OkaeriConfig {
-    private String reason;
-    private final String mutedBy;
-    private long date;
-    private final long until;
 
+  private String mutedBy;
+  private long until;
+  private String reason;
+  private long date;
 }

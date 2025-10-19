@@ -9,8 +9,9 @@ import lombok.EqualsAndHashCode;
 @Data
 @AllArgsConstructor
 public class Warn extends OkaeriConfig {
-    private String reason;
-    private final String warnedBy;
-    private long date;
+
+  private final String warnedBy;
+  private String reason;
+  private long date;
 
 }

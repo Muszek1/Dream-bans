@@ -9,9 +9,10 @@ import lombok.EqualsAndHashCode;
 @Data
 @AllArgsConstructor
 public class Mute extends OkaeriConfig {
-    private String reason;
-    private final String mutedBy;
-    private long date;
+
+  private final String mutedBy;
+  private String reason;
+  private long date;
 
 
 }

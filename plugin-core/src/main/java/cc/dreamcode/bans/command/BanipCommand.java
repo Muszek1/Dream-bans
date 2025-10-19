@@ -1,11 +1,15 @@
 package cc.dreamcode.bans.command;
 
-import cc.dreamcode.bans.profile.Profile;
-import cc.dreamcode.bans.profile.ProfileRepository;
+import cc.dreamcode.bans.profile.ProfileService;
 import cc.dreamcode.bans.service.BanService;
 import cc.dreamcode.command.CommandBase;
-import cc.dreamcode.command.annotation.*;
+import cc.dreamcode.command.annotation.Arg;
+import cc.dreamcode.command.annotation.Command;
+import cc.dreamcode.command.annotation.Executor;
+import cc.dreamcode.command.annotation.OptArg;
+import cc.dreamcode.command.annotation.Permission;
 import eu.okaeri.injector.annotation.Inject;
+import eu.okaeri.tasker.bukkit.BukkitTasker;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -15,30 +19,41 @@ import org.bukkit.command.CommandSender;
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class BanipCommand implements CommandBase {
 
-    private final BanService banService;
-    private final ProfileRepository profileRepository;
-    private final cc.dreamcode.bans.config.MessageConfig messageConfig;
+  private final BanService banService;
+  private final ProfileService profileService;
+  private final cc.dreamcode.bans.config.MessageConfig messageConfig;
+  private final BukkitTasker tasker;
 
-    @Executor(description = "Banuje gracza po IP.")
-    public void banIpPlayer(CommandSender sender,
-                            @Arg("target") OfflinePlayer target,
-                            @OptArg("reason") String reason) {
+  @Executor(description = "Banuje gracza po IP.")
+  public void banIpPlayer(CommandSender sender, @Arg("target") OfflinePlayer target,
+      @OptArg("reason") String reason) {
 
-        if (reason == null || reason.isEmpty()) {
-            reason = this.messageConfig.defaultReason;
-        }
+    String finalReason = (reason == null || reason.isEmpty())
+        ? this.messageConfig.defaultReason
+        : reason;
 
-        Profile profile = this.profileRepository.findOrCreate(target.getUniqueId(), target.getName());
-        String ip = profile.getLastIp();
+    this.profileService.loadAsync(target.getUniqueId(), target.getName())
+        .whenComplete((profile, exception) -> {
 
-        if (ip == null || ip.isEmpty()) {
-            this.messageConfig.noIpFound
-                    .with("player", target.getName())
-                    .send(sender);
+          if (exception != null) {
+            this.tasker.newChain().runSync(() -> {
+              this.messageConfig.errorWhenLoadingProfile.with("player", target.getName()).send(sender);
+            }).execute();
             return;
-        }
+          }
 
-        this.banService.createIpBan(sender, target.getUniqueId(), target.getName(), ip, reason);
-    }
+          this.tasker.newChain().runSync(() -> {
+
+            String ip = profile.getLastIp();
+
+            if (ip == null || ip.isEmpty()) {
+              this.messageConfig.noIpFound.with("player", target.getName()).send(sender);
+              return;
+            }
+
+            this.banService.createIpBan(sender, target.getUniqueId(), target.getName(), ip, finalReason);
+
+          }).execute();
+        });
+  }
 }
-

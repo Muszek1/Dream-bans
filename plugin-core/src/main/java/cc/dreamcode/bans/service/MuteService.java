@@ -7,128 +7,92 @@ import cc.dreamcode.bans.punishments.Mute;
 import cc.dreamcode.bans.punishments.TempMute;
 import cc.dreamcode.bans.utils.MessageBroadcaster;
 import eu.okaeri.injector.annotation.Inject;
+import java.util.UUID;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.command.CommandSender;
 
-import java.util.UUID;
-
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class MuteService {
 
-    private final Bans plugin;
-    private final ProfileService profileService;
-    private final MessageConfig messageConfig;
-    private final DiscordWebhookService discordWebhookService;
+  private final Bans plugin;
+  private final ProfileService profileService;
+  private final MessageConfig messageConfig;
+  private final DiscordWebhookService discordWebhookService;
 
-    public void createMute(@NonNull CommandSender sender,
-                           @NonNull UUID targetUuid,
-                           @NonNull String targetName,
-                           String reason) {
+  public void createMute(@NonNull CommandSender sender, @NonNull UUID targetUuid,
+      @NonNull String targetName, String reason) {
 
-        if (reason == null || reason.isEmpty()) {
-            reason = this.messageConfig.defaultReason;
-        }
-        final String finalReason = reason;
-
-        this.profileService.loadAsync(targetUuid, targetName).thenAccept(profile -> {
-            profile.mute(finalReason, sender.getName());
-
-            Mute mute = new Mute(finalReason, sender.getName(), System.currentTimeMillis());
-            profile.getMutes().add(mute);
-
-            this.profileService.saveAsync(profile);
-
-            MessageBroadcaster.broadcast(
-                    this.messageConfig.muteBroadcast,
-                    targetName,
-                    sender.getName(),
-                    "Mute",
-                    finalReason,
-                    0
-            );
-
-            this.discordWebhookService.sendBanEmbed(
-                    targetName,
-                    sender.getName(),
-                    finalReason,
-                    "Mute",
-                    0
-            );
-        }).exceptionally(e -> {
-            sender.sendMessage("§cNie udało się utworzyć muta dla " + targetName + ".");
-            e.printStackTrace();
-            return null;
-        });
+    if (reason == null || reason.isEmpty()) {
+      reason = this.messageConfig.defaultReason;
     }
+    final String finalReason = reason;
 
-    public void createTempMute(@NonNull CommandSender sender,
-                               @NonNull UUID targetUuid,
-                               @NonNull String targetName,
-                               long duration,
-                               String reason) {
+    this.profileService.loadAsync(targetUuid, targetName).thenAccept(profile -> {
+      profile.mute(finalReason, sender.getName());
 
-        if (reason == null || reason.isEmpty()) {
-            reason = this.messageConfig.defaultReason;
-        }
-        final String finalReason = reason;
+      Mute mute = new Mute(finalReason, sender.getName(), System.currentTimeMillis());
+      profile.getMutes().add(mute);
 
-        long start = System.currentTimeMillis();
-        long until = start + duration;
+      this.profileService.saveAsync(profile);
 
-        this.profileService.loadAsync(targetUuid, targetName).thenAccept(profile -> {
-            profile.mute(finalReason, sender.getName());
-            profile.setMuteUntil(until);
+      MessageBroadcaster.broadcast(this.messageConfig.muteBroadcast, targetName, sender.getName(),
+          "Mute", finalReason, 0);
 
-            TempMute tempMute = new TempMute(finalReason, sender.getName(), start, until);
-            profile.getTempMutes().add(tempMute);
+      this.discordWebhookService.sendBanEmbed(targetName, sender.getName(), finalReason, "Mute", 0);
+    }).exceptionally(e -> {
+      sender.sendMessage("§cNie udało się utworzyć muta dla " + targetName + ".");
+      e.printStackTrace();
+      return null;
+    });
+  }
 
-            this.profileService.saveAsync(profile);
+  public void createTempMute(@NonNull CommandSender sender, @NonNull UUID targetUuid,
+      @NonNull String targetName, long duration, String reason) {
 
-            MessageBroadcaster.broadcast(
-                    this.messageConfig.tempMuteBroadcast,
-                    targetName,
-                    sender.getName(),
-                    "TempMute",
-                    finalReason,
-                    until
-            );
-
-            this.discordWebhookService.sendBanEmbed(
-                    targetName,
-                    sender.getName(),
-                    finalReason,
-                    "TempMute",
-                    until
-            );
-        }).exceptionally(e -> {
-            sender.sendMessage("§cNie udało się utworzyć tymczasowego muta dla " + targetName + ".");
-            e.printStackTrace();
-            return null;
-        });
+    if (reason == null || reason.isEmpty()) {
+      reason = this.messageConfig.defaultReason;
     }
+    final String finalReason = reason;
 
-    public void removeMute(@NonNull CommandSender sender,
-                           @NonNull UUID targetUuid,
-                           @NonNull String targetName) {
+    long start = System.currentTimeMillis();
+    long until = start + duration;
 
-        this.profileService.loadAsync(targetUuid, targetName).thenAccept(profile -> {
-            profile.unmute();
-            this.profileService.saveAsync(profile);
+    this.profileService.loadAsync(targetUuid, targetName).thenAccept(profile -> {
+      profile.mute(finalReason, sender.getName());
+      profile.setMuteUntil(until);
 
-            this.messageConfig.unmuteNotify.send(sender);
+      TempMute tempMute = new TempMute(finalReason, start, sender.getName(), until);
+      profile.getTempMutes().add(tempMute);
 
-            this.discordWebhookService.sendBanEmbed(
-                    targetName,
-                    sender.getName(),
-                    "—",
-                    "Unmute",
-                    0
-            );
-        }).exceptionally(e -> {
-            sender.sendMessage("§cNie udało się usunąć muta gracza " + targetName + ".");
-            e.printStackTrace();
-            return null;
-        });
-    }
+      this.profileService.saveAsync(profile);
+
+      MessageBroadcaster.broadcast(this.messageConfig.tempMuteBroadcast, targetName,
+          sender.getName(), "TempMute", finalReason, until);
+
+      this.discordWebhookService.sendBanEmbed(targetName, sender.getName(), finalReason, "TempMute",
+          until);
+    }).exceptionally(e -> {
+      sender.sendMessage("§cNie udało się utworzyć tymczasowego muta dla " + targetName + ".");
+      e.printStackTrace();
+      return null;
+    });
+  }
+
+  public void removeMute(@NonNull CommandSender sender, @NonNull UUID targetUuid,
+      @NonNull String targetName) {
+
+    this.profileService.loadAsync(targetUuid, targetName).thenAccept(profile -> {
+      profile.unmute();
+      this.profileService.saveAsync(profile);
+
+      this.messageConfig.unmuteNotify.send(sender);
+
+      this.discordWebhookService.sendBanEmbed(targetName, sender.getName(), "—", "Unmute", 0);
+    }).exceptionally(e -> {
+      sender.sendMessage("§cNie udało się usunąć muta gracza " + targetName + ".");
+      e.printStackTrace();
+      return null;
+    });
+  }
 }

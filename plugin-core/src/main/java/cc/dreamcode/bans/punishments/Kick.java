@@ -9,8 +9,9 @@ import lombok.EqualsAndHashCode;
 @Data
 @AllArgsConstructor
 public class Kick extends OkaeriConfig {
-    private String reason;
-    private final String kickedBy;
-    private long date;
+
+  private final String kickedBy;
+  private String reason;
+  private long date;
 
 }

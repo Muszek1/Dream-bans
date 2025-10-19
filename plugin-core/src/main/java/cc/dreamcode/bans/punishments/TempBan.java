@@ -9,9 +9,10 @@ import lombok.EqualsAndHashCode;
 @Data
 @AllArgsConstructor
 public class TempBan extends OkaeriConfig {
-    private String reason;
-    private final String bannedBy;
-    private long date;
-    private final long until;
+
+  private final String bannedBy;
+  private final long until;
+  private String reason;
+  private long date;
 
 }

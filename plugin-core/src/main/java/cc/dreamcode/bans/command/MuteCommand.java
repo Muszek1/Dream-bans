@@ -13,18 +13,17 @@ import org.bukkit.entity.Player;
 @RequiredArgsConstructor(onConstructor_ = @Inject)
 public class MuteCommand implements CommandBase {
 
-    private final MuteService muteService;
-    private final cc.dreamcode.bans.config.MessageConfig messageConfig;
+  private final MuteService muteService;
+  private final cc.dreamcode.bans.config.MessageConfig messageConfig;
 
-    @Completion(arg = "target", value = "@allplayers")
-    @Executor(description = "Wycisza gracza.")
-    public void mutePlayer(CommandSender sender,
-                           @Arg("target") Player target,
-                           @OptArg("reason") String reason) {
-        if (reason == null || reason.isEmpty()) {
-            reason = this.messageConfig.defaultReason;
-        }
-        this.muteService.createMute(sender, target.getUniqueId(), target.getName(), reason);
+  @Completion(arg = "target", value = "@allplayers")
+  @Executor(description = "Wycisza gracza.")
+  public void mutePlayer(CommandSender sender, @Arg("target") Player target,
+      @OptArg("reason") String reason) {
+    if (reason == null || reason.isEmpty()) {
+      reason = this.messageConfig.defaultReason;
     }
+    this.muteService.createMute(sender, target.getUniqueId(), target.getName(), reason);
+  }
 }
 
