@@ -1,6 +1,8 @@
 // java
 package cc.dreamcode.bans.listener;
 
+import static cc.dreamcode.utilities.bukkit.StringColorUtil.fixColor;
+
 import cc.dreamcode.bans.config.MessageConfig;
 import cc.dreamcode.bans.config.PluginConfig;
 import cc.dreamcode.bans.profile.ProfileService;
@@ -31,10 +33,7 @@ public class BanListener implements Listener {
     if (this.pluginConfig.blacklistPlayers.stream()
         .anyMatch(player -> player.equalsIgnoreCase(name))) {
 
-      String kickMsg = this.messageConfig.blacklistKick
-          .replace("{reason}", "Blacklista z configu")
-          .replace("{blacklistedBy}", "Console")
-          .replace("&", "§");
+      String kickMsg = fixColor(this.messageConfig.blacklistKick);
 
       event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, kickMsg);
       return;

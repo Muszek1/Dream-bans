@@ -198,7 +198,7 @@ public class MessageConfig extends OkaeriConfig {
       "&cNie możesz zbanować gracza &f{player}&c, ponieważ jest chroniony.");
 
   @CustomKey("blacklist.kick")
-  public String blacklistKick = "&cZostałeś dodany do czarnej listy!\n&7Powód: &f{reason}\n&7Przez: &f{blacklistedBy}";
+  public String blacklistKick = "&cZostałeś dodany do czarnej listy!";
 
   @CustomKey("ban.broadcast")
   public String banBroadcast = "&aGracz &f{player} &azostał zbanowany przez &f{bannedBy}";
