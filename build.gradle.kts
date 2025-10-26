@@ -11,7 +11,7 @@ idea {
 
 allprojects {
     group = "cc.dreamcode.bans"
-    version = "1.0.0-beta.3"
+    version = "1.0.0-beta.4"
 
     apply(plugin = "java-library")
     apply(plugin = "com.gradleup.shadow")

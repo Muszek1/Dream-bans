@@ -11,13 +11,14 @@ import cc.dreamcode.bans.punishments.TempMute;
 import cc.dreamcode.menu.bukkit.BukkitMenuBuilder;
 import cc.dreamcode.menu.bukkit.base.BukkitMenu;
 import cc.dreamcode.menu.bukkit.base.BukkitMenuPaginated;
+import cc.dreamcode.utilities.DateUtil;
 import cc.dreamcode.utilities.builder.MapBuilder;
 import cc.dreamcode.utilities.bukkit.builder.ItemBuilder;
 import eu.okaeri.injector.annotation.Inject;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.Material;
@@ -30,27 +31,35 @@ public class CheckBanMenu {
   private final PluginConfig pluginConfig;
 
   public void open(Profile profile, Player viewer) {
-    BukkitMenuBuilder builder = this.pluginConfig.checkBanMenu;
+    PluginConfig.CheckBanMenuConfig menuConfig = this.pluginConfig.checkBanMenu;
+    BukkitMenuBuilder builder = menuConfig.menuBuilder;
 
     BukkitMenu baseMenu = builder.buildEmpty(
         new MapBuilder<String, Object>().put("name", safe(profile.getName())).build());
 
-    baseMenu.setItem(4,
-        makeItem(Material.PAPER, "§ePodsumowanie kar", "§7Bany: §c" + profile.getBans().size(),
-            "§7TempBany: §c" + profile.getTempBans().size(),
-            "§7Mute: §c" + profile.getMutes().size(),
-            "§7TempMute: §c" + profile.getTempMutes().size(),
-            "§7BanIP: §c" + profile.getIpBansCheck().size(),
-            "§7Kicki: §c" + profile.getKicks().size()));
+    Map<String, Object> summaryPlaceholders = new MapBuilder<String, Object>()
+        .put("name", safe(profile.getName()))
+        .put("bans_size", profile.getBans().size())
+        .put("tempbans_size", profile.getTempBans().size())
+        .put("mutes_size", profile.getMutes().size())
+        .put("tempmutes_size", profile.getTempMutes().size())
+        .put("ipbans_size", profile.getIpBansCheck().size())
+        .put("kicks_size", profile.getKicks().size())
+        .build();
+
+    ItemStack summaryItem = ItemBuilder.of(menuConfig.summaryItem)
+        .fixColors(summaryPlaceholders, true)
+        .toItemStack();
+
+    baseMenu.setItem(4, summaryItem);
 
     BukkitMenuPaginated paginatedMenu = baseMenu.toPaginated();
-    paginatedMenu.setPreviousPageSlot(48,
-        new ItemBuilder(Material.ARROW).setName("&aPoprzednia strona").toItemStack(), e -> {
-        });
 
-    paginatedMenu.setNextPageSlot(50,
-        new ItemBuilder(Material.ARROW).setName("&aNastępna strona").toItemStack(), e -> {
-        });
+    paginatedMenu.setPreviousPageSlot(48, menuConfig.previousPageItem, e -> {
+    });
+
+    paginatedMenu.setNextPageSlot(50, menuConfig.nextPageItem, e -> {
+    });
 
     List<Integer> storageSlots = paginatedMenu.getStorageItemSlots();
 
@@ -80,64 +89,94 @@ public class CheckBanMenu {
   }
 
   private ItemStack createPunishmentItem(Object punishment) {
+    PluginConfig.PunishmentItemsConfig itemsConfig = this.pluginConfig.punishmentItems;
+
     if (punishment instanceof Ban) {
       Ban ban = (Ban) punishment;
-      return makeItem(Material.BOOK, "§cBan", "§7Powód: §f" + safe(ban.getReason()),
-          "§7Przez: §f" + safe(ban.getBannedBy()), "§7Data: §f" + formatDate(ban.getDate()),
-          "§7Do: §f" + (ban.getUntil() > 0 ? formatDate(ban.getUntil()) : "§cPermanentny"));
+      Map<String, Object> placeholders = new MapBuilder<String, Object>()
+          .put("reason", safe(ban.getReason()))
+          .put("bannedBy", safe(ban.getBannedBy()))
+          .put("date", formatOrDefault(ban.getDate()))
+          .put("until_or_permanent", formatUntilOrPermanent(ban.getUntil()))
+          .build();
+      return ItemBuilder.of(itemsConfig.ban)
+          .fixColors(placeholders, true)
+          .toItemStack();
     }
+
     if (punishment instanceof TempBan) {
       TempBan tempBan = (TempBan) punishment;
-      return makeItem(Material.ENCHANTED_BOOK, "§cTempBan",
-          "§7Powód: §f" + safe(tempBan.getReason()), "§7Przez: §f" + safe(tempBan.getBannedBy()),
-          "§7Od: §f" + formatDate(tempBan.getDate()), "§7Do: §f" + formatDate(tempBan.getUntil()));
+      Map<String, Object> placeholders = new MapBuilder<String, Object>()
+          .put("reason", safe(tempBan.getReason()))
+          .put("bannedBy", safe(tempBan.getBannedBy()))
+          .put("date", formatOrDefault(tempBan.getDate()))
+          .put("until", formatOrDefault(tempBan.getUntil()))
+          .build();
+      return ItemBuilder.of(itemsConfig.tempBan)
+          .fixColors(placeholders, true)
+          .toItemStack();
     }
+
     if (punishment instanceof Mute) {
       Mute mute = (Mute) punishment;
-      return makeItem(Material.PAPER, "§7Mute", "§7Powód: §f" + safe(mute.getReason()),
-          "§7Przez: §f" + safe(mute.getMutedBy()), "§7Data: §f" + formatDate(mute.getDate()),
-          "§7Do: §f§cPermanentny");
+      Map<String, Object> placeholders = new MapBuilder<String, Object>()
+          .put("reason", safe(mute.getReason()))
+          .put("mutedBy", safe(mute.getMutedBy()))
+          .put("date", formatOrDefault(mute.getDate()))
+          .build();
+      return ItemBuilder.of(itemsConfig.mute)
+          .fixColors(placeholders, true)
+          .toItemStack();
     }
+
     if (punishment instanceof TempMute) {
       TempMute tempMute = (TempMute) punishment;
-      return makeItem(Material.WRITABLE_BOOK, "§7TempMute",
-          "§7Powód: §f" + safe(tempMute.getReason()), "§7Przez: §f" + safe(tempMute.getMutedBy()),
-          "§7Od: §f" + formatDate(tempMute.getDate()),
-          "§7Do: §f" + formatDate(tempMute.getUntil()));
+      Map<String, Object> placeholders = new MapBuilder<String, Object>()
+          .put("reason", safe(tempMute.getReason()))
+          .put("mutedBy", safe(tempMute.getMutedBy()))
+          .put("date", formatOrDefault(tempMute.getDate()))
+          .put("until", formatOrDefault(tempMute.getUntil()))
+          .build();
+      return ItemBuilder.of(itemsConfig.tempMute)
+          .fixColors(placeholders, true)
+          .toItemStack();
     }
+
     if (punishment instanceof IpBan) {
       IpBan ipBan = (IpBan) punishment;
-      return makeItem(Material.BEDROCK, "§4BanIP", "§7Powód: §f" + safe(ipBan.getReason()),
-          "§7Przez: §f" + safe(ipBan.getBannedBy()), "§7Data: §f" + formatDate(ipBan.getDate()),
-          "§7Do: §f" + (ipBan.getUntil() > 0 ? formatDate(ipBan.getUntil()) : "§cPermanentny"));
+      Map<String, Object> placeholders = new MapBuilder<String, Object>()
+          .put("reason", safe(ipBan.getReason()))
+          .put("bannedBy", safe(ipBan.getBannedBy()))
+          .put("date", formatOrDefault(ipBan.getDate()))
+          .put("until_or_permanent", formatUntilOrPermanent(ipBan.getUntil()))
+          .build();
+      return ItemBuilder.of(itemsConfig.ipBan)
+          .fixColors(placeholders, true)
+          .toItemStack();
     }
+
     if (punishment instanceof Kick) {
       Kick kick = (Kick) punishment;
-      return makeItem(Material.IRON_BOOTS, "§bKick", "§7Powód: §f" + safe(kick.getReason()),
-          "§7Przez: §f" + safe(kick.getKickedBy()), "§7Data: §f" + formatDate(kick.getDate()));
+      Map<String, Object> placeholders = new MapBuilder<String, Object>()
+          .put("reason", safe(kick.getReason()))
+          .put("kickedBy", safe(kick.getKickedBy()))
+          .put("date", formatOrDefault(kick.getDate()))
+          .build();
+      return ItemBuilder.of(itemsConfig.kick)
+          .fixColors(placeholders, true)
+          .toItemStack();
     }
 
     return new ItemStack(Material.AIR);
   }
 
-  private ItemStack makeItem(Material mat, String name, String... lore) {
-    return new ItemBuilder(mat).setName(name).setLore(Arrays.asList(lore)).toItemStack();
+  private String formatOrDefault(long timestamp) {
+    return (timestamp > 0) ? DateUtil.format(Instant.ofEpochMilli(timestamp)) : "§cBrak";
   }
 
-  private String formatDate(long ts) {
-    if (ts <= 0) {
-      return "§cBrak";
-    }
-
-    Instant instant = Instant.ofEpochMilli(ts);
-    return java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
-
-        .withZone(java.time.ZoneId.systemDefault())
-
-        .format(java.time.Instant.ofEpochMilli(ts));
-
+  private String formatUntilOrPermanent(long timestamp) {
+    return (timestamp > 0) ? DateUtil.format(Instant.ofEpochMilli(timestamp)) : "§cPermanentny";
   }
-
 
   private String safe(String s) {
     return (s == null || s.trim().isEmpty()) ? "—" : s;

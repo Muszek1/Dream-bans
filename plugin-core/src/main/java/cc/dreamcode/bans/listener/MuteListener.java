@@ -3,11 +3,10 @@ package cc.dreamcode.bans.listener;
 
 import cc.dreamcode.bans.config.MessageConfig;
 import cc.dreamcode.bans.profile.ProfileService;
+import cc.dreamcode.utilities.DateUtil;
 import eu.okaeri.injector.annotation.Inject;
 import eu.okaeri.tasker.bukkit.BukkitTasker;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.util.Date;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -56,8 +55,7 @@ public class MuteListener implements Listener {
                 this.messageConfig.tempMuteChat.with("reason",
                         profile.getMuteReason() == null ? "" : profile.getMuteReason())
                     .with("mutedBy", profile.getMutedBy() == null ? "" : profile.getMutedBy())
-                    .with("muteExpire", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(
-                        new Date(profile.getMuteUntil()))).send(player);
+                    .with("muteExpire", DateUtil.format(Instant.ofEpochMilli(profile.getMuteUntil()))).send(player);
 
               } else {
                 this.messageConfig.muteChat.with("reason",

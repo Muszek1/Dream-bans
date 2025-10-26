@@ -4,11 +4,10 @@ package cc.dreamcode.bans.listener;
 import cc.dreamcode.bans.config.MessageConfig;
 import cc.dreamcode.bans.config.PluginConfig;
 import cc.dreamcode.bans.profile.ProfileService;
+import cc.dreamcode.utilities.DateUtil;
 import eu.okaeri.injector.annotation.Inject;
 import eu.okaeri.tasker.bukkit.BukkitTasker;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.util.Date;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.event.EventHandler;
@@ -86,7 +85,7 @@ public class BanListener implements Listener {
                             .replace("{reason}", reason)
                             .replace("{bannedBy}", bannedBy)
                             .replace("{banExpire}",
-                                new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(banUntil))))
+                                DateUtil.format(Instant.ofEpochMilli(banUntil))))
                         .replace("&", "§");
                   }
 

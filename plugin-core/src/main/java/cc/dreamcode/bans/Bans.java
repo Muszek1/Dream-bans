@@ -50,7 +50,6 @@ import cc.dreamcode.utilities.adventure.AdventureProcessor;
 import cc.dreamcode.utilities.adventure.AdventureUtil;
 import cc.dreamcode.utilities.bukkit.StringColorUtil;
 import eu.okaeri.configs.serdes.OkaeriSerdesPack;
-import eu.okaeri.injector.annotation.Inject;
 import eu.okaeri.persistence.document.DocumentPersistence;
 import eu.okaeri.tasker.bukkit.BukkitTasker;
 import lombok.Getter;
@@ -61,8 +60,6 @@ public final class Bans extends DreamBukkitPlatform implements DreamBukkitConfig
 
   @Getter
   private static Bans instance;
-  @Inject
-  private ProfileService profileService;
 
   @Override
   public void load(@NonNull ComponentService componentService) {
@@ -155,10 +152,6 @@ public final class Bans extends DreamBukkitPlatform implements DreamBukkitConfig
 
   @Override
   public void disable() {
-    // features need to be call when server is stopping
-    if (this.profileService != null) {
-      this.profileService.saveAllAsync();
-    }
   }
 
 
@@ -172,6 +165,7 @@ public final class Bans extends DreamBukkitPlatform implements DreamBukkitConfig
     return registry -> {
       registry.register(new BukkitNoticeSerializer());
       registry.register(new MenuBuilderSerializer());
+
     };
   }
 

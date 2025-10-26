@@ -22,7 +22,7 @@ dependencies {
 
     // -- dream-utilties --
     implementation("cc.dreamcode:utilities-adventure:1.5.8")
-
+    implementation("cc.dreamcode:utilities-bukkit:1.5.8")
     // -- dream-notice --
     implementation("cc.dreamcode.notice:bukkit:1.7.4")
     implementation("cc.dreamcode.notice:bukkit-serializer:1.7.4")
