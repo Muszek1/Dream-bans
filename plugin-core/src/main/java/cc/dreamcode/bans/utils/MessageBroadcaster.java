@@ -27,11 +27,11 @@ public class MessageBroadcaster {
 
         ComponentBuilder hover = new ComponentBuilder(type + " Info").color(headerColor)
                 .append("\n").reset()
-                .append("Reason » ").color(ChatColor.RED).append(reason)
+                .append("Powód » ").color(ChatColor.RED).append(reason)
                 .append("\n").reset()
-                .append("By » ").color(ChatColor.YELLOW).append(staff)
+                .append("Przez » ").color(ChatColor.YELLOW).append(staff)
                 .append("\n").reset()
-                .append("Expire » ").color(ChatColor.GOLD).append(formattedExpire);
+                .append("Wygasa » ").color(ChatColor.GOLD).append(formattedExpire);
 
         String parsedMessage = rawMessage
                 .replace("{player}", target)

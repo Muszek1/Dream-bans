@@ -1,12 +1,13 @@
 package cc.dreamcode.bans.command;
 
+import cc.dreamcode.bans.config.MessageConfig;
 import cc.dreamcode.bans.service.BanService;
 import cc.dreamcode.command.CommandBase;
 import cc.dreamcode.command.annotation.Arg;
+import cc.dreamcode.command.annotation.Args;
 import cc.dreamcode.command.annotation.Command;
 import cc.dreamcode.command.annotation.Completion;
 import cc.dreamcode.command.annotation.Executor;
-import cc.dreamcode.command.annotation.OptArg;
 import cc.dreamcode.command.annotation.Permission;
 import eu.okaeri.injector.annotation.Inject;
 import lombok.RequiredArgsConstructor;
@@ -19,19 +20,22 @@ import org.bukkit.command.CommandSender;
 public class SilentbanCommand implements CommandBase {
 
   private final BanService banService;
-  private final cc.dreamcode.bans.config.MessageConfig messageConfig;
+  private final MessageConfig messageConfig;
 
   @Completion(arg = "target", value = "@allplayers")
-  @Executor(description = "Cicho banuje gracza (bez broadcastu).")
-  public void banPlayer(CommandSender sender, @Arg("target") OfflinePlayer target,
-      @OptArg("reason") String reason) {
-    if (reason == null || reason.isEmpty()) {
+  @Executor(description = "Banuje gracza bez publicznego ogłoszenia.")
+  public void silentBanPlayer(CommandSender sender,
+      @Arg("target") OfflinePlayer target,
+      @Args(min = 1) String[] args) {
+
+    String reason = String.join(" ", args).trim();
+    if (reason.isEmpty()) {
       reason = this.messageConfig.defaultReason;
     }
 
     this.banService.createBan(sender, target.getUniqueId(), target.getName(), reason);
 
-    String finalReason = reason;
+    final String finalReason = reason;
     this.messageConfig.silentBanNotify.with("player", target.getName())
         .with("issuer", sender.getName()).with("reason", finalReason)
         .sendPermitted("dream-chat.silentinfo");
@@ -40,4 +44,3 @@ public class SilentbanCommand implements CommandBase {
         .with("issuer", sender.getName()).with("reason", reason).send(sender);
   }
 }
-

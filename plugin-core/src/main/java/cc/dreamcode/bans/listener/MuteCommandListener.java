@@ -3,12 +3,13 @@ package cc.dreamcode.bans.listener;
 
 import cc.dreamcode.bans.config.MessageConfig;
 import cc.dreamcode.bans.config.PluginConfig;
+import cc.dreamcode.bans.profile.Profile;
 import cc.dreamcode.bans.profile.ProfileService;
 import eu.okaeri.injector.annotation.Inject;
-import eu.okaeri.tasker.bukkit.BukkitTasker;
 import lombok.RequiredArgsConstructor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
@@ -18,42 +19,33 @@ public class MuteCommandListener implements Listener {
   private final ProfileService profileService;
   private final PluginConfig pluginConfig;
   private final MessageConfig messageConfig;
-  private final BukkitTasker tasker;
 
-  @EventHandler
+  @EventHandler(priority = EventPriority.LOW)
   public void onCommand(PlayerCommandPreprocessEvent event) {
+    if (event.isCancelled()) {
+      return;
+    }
 
     Player player = event.getPlayer();
 
-    this.profileService.loadAsync(player.getUniqueId(), player.getName())
-        .whenComplete((profile, exception) -> {
+    Profile profile = this.profileService.getProfileCache().get(player.getUniqueId());
 
-          if (exception != null) {
-            System.err.println("[Dream-Bans] Błąd podczas ładowania profilu " + player.getName() + " w MuteCommandListener.");
-            exception.printStackTrace();
-            return;
-          }
+    if (profile == null) {
+      return;
+    }
 
-          this.tasker.newChain().runSync(() -> {
+    if (!profile.isMuted()) {
+      return;
+    }
 
-            if (event.isCancelled()) {
-              return;
-            }
+    String cmd = event.getMessage().split(" ")[0].toLowerCase().substring(1);
 
-            if (!profile.isMuted()) {
-              return;
-            }
+    boolean isCommandBlocked = this.pluginConfig.muteBlockedCommands.stream()
+        .anyMatch(blockedCmd -> blockedCmd.equalsIgnoreCase(cmd));
 
-            String cmd = event.getMessage().split(" ")[0].toLowerCase().substring(1);
-
-            boolean isCommandBlocked = this.pluginConfig.muteBlockedCommands.stream()
-                .anyMatch(blockedCmd -> blockedCmd.equalsIgnoreCase(cmd));
-
-            if (isCommandBlocked) {
-              event.setCancelled(true);
-              this.messageConfig.muteCommandBlocked.send(player);
-            }
-          }).execute();
-        });
+    if (isCommandBlocked) {
+      event.setCancelled(true);
+      this.messageConfig.muteCommandBlocked.send(player);
+    }
   }
 }

@@ -12,6 +12,7 @@ import cc.dreamcode.utilities.TimeUtil;
 import eu.okaeri.configs.exception.OkaeriException;
 import eu.okaeri.injector.annotation.Inject;
 import lombok.RequiredArgsConstructor;
+import org.bukkit.command.CommandSender; // Potrzebny import
 
 @Command(name = "dreambans")
 @RequiredArgsConstructor(onConstructor_ = @Inject)
@@ -22,8 +23,8 @@ public class ChatReloadCommand implements CommandBase {
 
   @Async
   @Permission("dream-bans.reload")
-  @Executor(path = "reload", description = "Przeładowuje konfiguracje Dream-Band.")
-  BukkitNotice reload() {
+  @Executor(path = "reload", description = "Przeładowuje konfiguracje Dream-Bans.")
+  BukkitNotice reload(CommandSender sender) {
     final long start = System.currentTimeMillis();
     try {
       this.messageConfig.load();

@@ -82,7 +82,7 @@ public class MessageConfig extends OkaeriConfig {
       "&aOstrzeżono gracza &f{player} &azapowód: {reason}");
 
   @CustomKey("warn.actionBar")
-  public BukkitNotice actionBarWarn = BukkitNotice.actionBar(
+  public BukkitNotice actionBarWarn = BukkitNotice.chat( // <-- POPRAWKA 1 (z actionBar na chat)
       "&cZostałeś ostrzeżony! &r&7Powód: &f{reason}");
 
   @CustomKey("kick.success")
@@ -107,7 +107,7 @@ public class MessageConfig extends OkaeriConfig {
 
   @CustomKey("ban.silent-success")
   public BukkitNotice silentBanSuccess = BukkitNotice.chat(
-      "&a[Cichy ban] Odbanowałeś gracza &f{player} &a(powód: {reason})");
+      "&a[Cichy ban] Zbanowałeś gracza &f{player} &a(powód: {reason})");
 
   @CustomKey("ban.silent-notify")
   public BukkitNotice silentBanNotify = BukkitNotice.chat(
@@ -217,7 +217,7 @@ public class MessageConfig extends OkaeriConfig {
 
   @CustomKey("multiAccount.alert")
   public BukkitNotice multiAccountAlert = BukkitNotice.chat(
-      "&c⚠ Gracz &f{joining} &cłączy się z IP, na którym konto &f{banned} &cma aktywnego bana!");
+      "&c⚠ Gracz &f{joining} &cłączy się z IP, na którym zarejestrowane jest inne konto - &f{banned}!");
 
   @CustomKey("errorWhenLoadingProfile.notify")
   public BukkitNotice errorWhenLoadingProfile = BukkitNotice.chat("&aerrorWhenLoadingProfile!");;

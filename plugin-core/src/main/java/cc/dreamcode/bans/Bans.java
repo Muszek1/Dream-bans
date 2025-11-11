@@ -3,6 +3,7 @@ package cc.dreamcode.bans;
 
 import cc.dreamcode.bans.command.BanCommand;
 import cc.dreamcode.bans.command.BanipCommand;
+import cc.dreamcode.bans.command.ChatReloadCommand;
 import cc.dreamcode.bans.command.CheckBanCommand;
 import cc.dreamcode.bans.command.KickCommand;
 import cc.dreamcode.bans.command.MuteCommand;
@@ -143,6 +144,7 @@ public final class Bans extends DreamBukkitPlatform implements DreamBukkitConfig
     componentService.registerComponent(MuteListener.class);
     componentService.registerComponent(MuteCommandListener.class);
     componentService.registerComponent(MultiAccountListener.class);
+    componentService.registerComponent(ChatReloadCommand.class);
 
     componentService.registerComponent(MessageBroadcaster.class);
 

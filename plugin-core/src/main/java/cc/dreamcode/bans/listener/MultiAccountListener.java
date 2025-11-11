@@ -67,7 +67,7 @@ public class MultiAccountListener implements Listener {
                       } else {
                         this.messageConfig.multiAccountAlert
                             .with("joining", joiningName)
-                            .with("banned", profileName + " (no ban)")
+                            .with("banned", profileName + " (brak bana)")
                             .send(admin);
                       }
                     }
